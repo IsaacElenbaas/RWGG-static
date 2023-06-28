@@ -1,0 +1,1884 @@
+<!doctype html>
+
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<!--{{{ style-->
+		<style>
+			* {
+				font-family: sans-serif;
+				font-weight: 500;
+				color: #EFEEF1;
+				user-select: none;
+				transition: 0.2s, display 0s;
+			}
+			*:focus {
+				outline: none;
+			}
+			body {
+				margin: 0px;
+				background-color: black;
+			}
+			table {
+				border: none;
+			}
+			.splash, #settings, #canvas {
+				background-color: black;
+				position: absolute;
+				left: 0;
+				top: 0;
+				overflow-x: hidden;
+				min-width: 100vw;
+				min-height: 100vh;
+				width: 100%;
+				height: 100%;
+			}
+			.splash, #settings {
+				opacity: 0;
+				pointer-events: none;
+			}
+			.splash>* {
+				position: absolute;
+				left: 50%;
+				top: 50%;
+				transform: translateX(-50%) translateY(-50%);
+			}
+			#hint {
+				image-rendering: pixelated;
+				position: absolute;
+				right: 0;
+				object-fit: contain;
+				max-width: calc(100% - 2 * (2em + 0.3em));
+				height: 15%;
+				margin: 2em;
+				border: 0.3em solid black;
+				border-radius: 0.6em;
+			}
+			#timer {
+				position: absolute;
+				left: 0;
+				right: 0;
+				top: 1em;
+			}
+			#show_settings {
+				margin: 0.5em;
+				font-size: 4em;
+				text-align: center;
+				line-height: 1em;
+				width: 1em;
+				height: 1em;
+				background-color: black;
+				border-radius: 0.15em;
+			}
+			#clients_container {
+				margin-left: 2em;
+				max-width: 30vw;
+				max-height: 60vh;
+				border-radius: 0.5em;
+			}
+			#clients {
+				background-color: rgba(127, 127, 127, 0.35);
+			}
+			#clients td {
+				padding: 0.25em;
+			}
+
+	/*{{{ settings*/
+			#timer, #header {
+				text-align: center;
+				transform: scaleX(2) scaleY(2.5);
+				letter-spacing: 0.1em;
+				overflow: hidden;
+				margin-left: auto;
+				margin-right: auto;
+				width: 30%;
+			}
+			#arrows {
+				position: absolute;
+				margin: auto;
+				left: 0;
+				right: 0;
+				width: 90%;
+			}
+			/* 1024/0.90 */
+			@media (min-aspect-ratio: 1138/768) {
+				#arrows {
+					width: calc(1024/768*100vh);
+				}
+			}
+			#arrows>h1 {
+				position: absolute;
+				border: 0.1em solid;
+				transform: translateY(-0.1em);
+				border-radius: 0.25em;
+				border-color: #4B4653;
+				color: #4B4653;
+				font-weight: bold;
+				text-align: center;
+				line-height: 1.5em;
+				width: 1.5em;
+				height: 1.5em;
+			}
+			#arrows>h1:hover {
+				border-color: #EFEEF1;
+				color: #EFEEF1;
+			}
+			#settings>form {
+				margin: auto;
+				margin-top: 5em;
+				width: 90%;
+			}
+			/* 1024/0.90 */
+			@media (min-aspect-ratio: 1138/768) {
+				#settings>form {
+					width: calc(1024/768*100vh);
+				}
+			}
+			.text_input {
+				display: table;
+				width: 100%;
+			}
+			.text_input>span:first-child {
+				display: table-cell;
+				white-space: nowrap;
+				padding-right: 0.5em;
+			}
+			#lobby, #name, #time_vote_container {
+				display: table-cell;
+				width: 100%;
+				border: 0.15em solid;
+				border-radius: 0.6em;
+				padding: 0.3em 0px 0.3em 0px;
+				text-align: center;
+			}
+			input[type="radio"], input[type="checkbox"] {
+				display: none;
+			}
+			input[type="checkbox"]+span {
+				border: 0.15em solid;
+				border-radius: 0.25em;
+				width: 1.25em;
+				height: 1.25em;
+			}
+			input[type="checkbox"]+span:after {
+				/* stops things before it from moving? */
+				content: ".";
+				color: transparent;
+			}
+			input[type="checkbox"]:checked+span:after {
+				content: "\2714";
+				padding-left: 0.2em;
+				color: #EFEEF1;
+			}
+			label.choice {
+				display: inline-block;
+			}
+			label.choice * {
+				color: #4B4653;
+			}
+			label.check.choice * {
+				color: #EFEEF1;
+			}
+			label.choice>span {
+				display: inline-block;
+				border: 0.15em solid;
+				border-radius: 0.6em;
+			}
+			label.text.choice {
+				margin-top: 0.5em;
+				margin-right: 0.5em;
+			}
+			label.text.choice>span {
+				min-width: 10em;
+			}
+			label.choice>span>span {
+				display: inline-block;
+				padding: 0.3em 0px 0.3em 0px;
+				margin: 0.15em;
+				width: calc(100% - 2 * 0.15em);
+				text-align: center;
+			}
+			label.choice>input[type="radio"]:checked+span, label.choice>input[type="radio"]:checked+span *, #play * {
+				color: #A9A4B2;
+			}
+			label.choice>input[type="radio"]:checked+span>span {
+				border: 0.15em solid;
+				border-radius: 0.7em;
+				/* account for border width */
+				padding: calc(0.3em - 0.15em) 0px calc(0.3em - 0.15em) 0px;
+				width: calc(100% - 2 * (0.15em + 0.15em));
+			}
+	/*}}}*/
+
+		</style>
+<!--}}}-->
+
+<!--{{{ script-->
+		<script type="application/javascript">
+			let test_hint_selection = false;
+			let settings = { "difficulty": 5, "dev": false, "color": false, "stretch": true, "zoom_move": false };
+			let last_dev = false;
+
+			const step = 20; // pixels per tile
+			let lobby = (new URLSearchParams(window.location.search)).get("lobby");
+			let image = {};
+
+	/*{{{ random(), random_perc()*/
+			function simplerng(seed) {
+				return function() {
+					if(seed === null) return Math.floor(Math.random()*4294967295);
+					else {
+						seed ^= seed << 13;
+						seed ^= seed >> 17;
+						seed ^= seed << 5;
+						seed = Math.abs(Math.fround(seed));
+						return seed;
+					}
+				}
+			}
+			let random;
+			function random_perc() { return random()/4294967295; }
+			if(lobby === null) random = simplerng(null);
+	/*}}}*/
+
+	/*{{{ onclicks*/
+			let loading = true;
+			let lobby_loading = (lobby !== null);
+			function play() {
+				if(document.getElementById("monk").checked)
+					settings["difficulty"] = 15;
+				if(document.getElementById("survivor").checked)
+					settings["difficulty"] = 10;
+				if(document.getElementById("hunter").checked)
+					settings["difficulty"] = 5;
+				settings["dev"] = document.getElementById("dev").checked;
+				if(settings["dev"] != last_dev) {
+					last_dev = settings["dev"];
+					for(let i = 0; i < connections.length; i++) {
+						connections[i].initialized = false;
+					}
+					let load = function(i) {
+						connections[i].init();
+						if(i+1 < connections.length) setTimeout(load, 1, i+1);
+					}
+					load(0);
+				}
+				settings["color"] = document.getElementById("color").checked;
+				settings["stretch"] = document.getElementById("stretch").checked;
+				settings["zoom_move"] = document.getElementById("zoom_move").checked;
+
+				if(document.getElementById("header").innerText === "SINGLEPLAYER") {
+					document.getElementById("loading_hint").style.opacity = "1";
+					document.getElementById("loading_hint").style.pointerEvents = "unset";
+					if(lobby !== null) {
+						ws.send("ll|\n");
+						lobby = null;
+						document.getElementById("loading_hint").firstElementChild.innerText = "Generating hint. . .";
+						clearInterval(timer);
+						document.getElementById("timer").style.display = "none";
+						document.getElementById("clients").style.display = "none";
+						let url = window.location.toString().replace(/\?.*$/, "");
+						window.history.pushState(null, "", url);
+						window.history.replaceState(null, "", url);
+					}
+				}
+				else {
+					document.getElementById("loading_hint").firstElementChild.innerText = "Waiting for everyone to generate hint. . .";
+					document.getElementById("timer").style.removeProperty("display");
+					document.getElementById("clients").style.removeProperty("display");
+					let new_lobby = document.getElementById("lobby").innerText;
+					if(new_lobby.length === 0) {
+						document.getElementById("multi_error").innerText = "Lobby name cannot be empty!";
+						return; }
+					else if(new_lobby.length > 20) {
+						document.getElementById("multi_error").innerText = "Lobby name cannot be >20 characters!";
+						return; }
+					else if(document.getElementById("name").innerText.length > 20) {
+						document.getElementById("multi_error").innerText = "Name cannot be >20 characters!";
+						return; }
+					document.getElementById("multi_error").innerText = "";
+					if(new_lobby !== lobby) {
+						lobby = new_lobby;
+						document.getElementById("clients").innerHTML = "<tr><td>Name</td><td>Hint Size</td><td>Avg</td><td>Dist</td></tr>";
+						// lobby is faked to null if loading straight to a lobby
+						// without this an unnecessary history entry is added each refresh
+						if(new_lobby !== (new URLSearchParams(window.location.search)).get("lobby")) {
+							let url = window.location.toString().replace(/\?.*$/, "") + "?lobby=" + lobby;
+							window.history.pushState(null, "", url);
+							window.history.replaceState(null, "", url);
+						}
+						document.getElementById("loading").style.opacity = "1";
+						document.getElementById("loading").style.pointerEvents = "unset";
+					}
+					lobby_loading = true;
+					if(load_progress.loading === 0) {
+						let message  = "n|"  + document.getElementById("name").innerText + "\n";
+						    message += "tv|" + document.getElementById("time_vote").innerText + "\n";
+						    message += "d|"  + settings["difficulty"] + "\n";
+						    message += "lj|" + lobby + "\n";
+						let connect = function() { ws.send(message); }
+						if(ws.readyState === 1) connect();
+						else ws.onopen = connect;
+					}
+				}
+
+				document.getElementById("settings").style.removeProperty("opacity");
+				document.getElementById("settings").style.removeProperty("pointer-events");
+				if(load_progress.loading !== 0) {
+					document.getElementById("loading").style.opacity = "1";
+					document.getElementById("loading").style.pointerEvents = "unset";
+					load_progress.callback(function() { play(); });
+					return;
+				}
+				if(lobby === null) {
+					image.image = new Image();
+					image.image.onload = load_round.bind(image.image);
+					image.image.src = "./Merged Screenshots/" + rooms[round].region + "/" + rooms[round].name + ".png";
+					guessed = false;
+				}
+			}
+			function switch_modes(delay) {
+				alert("Unfortunately the internet has broken at my college apartment 9hrs away.\nThis is a static version and multiplayer will be unavailable until late August.");
+				return;
+				document.getElementById("transition").style.opacity = "1";
+				document.getElementById("transition").style.pointerEvents = "unset";
+				let later = function() {
+					document.getElementById("transition").style.removeProperty("opacity");
+					document.getElementById("transition").style.removeProperty("pointer-events");
+					if(document.getElementById("header").innerText === "SINGLEPLAYER") {
+						document.getElementById("header").innerText = "MULTIPLAYER";
+						document.getElementById("hide_single").style.display = "unset";
+					}
+					else {
+						document.getElementById("header").innerText = "SINGLEPLAYER";
+						document.getElementById("hide_single").style.display = "none";
+					}
+				}
+				if(delay) setTimeout(later, 500);
+				else later();
+			}
+			function show_settings() {
+				loading = true;
+				document.getElementById("settings").style.opacity = "1";
+				document.getElementById("settings").style.pointerEvents = "unset";
+			}
+			function expand_hint() {
+				if(!document.getElementById("hint").style.height.startsWith("calc")) {
+					document.getElementById("hint").style.height = "calc(100% - 2 * (2em + 0.3em))";
+					document.getElementById("hint").style.border = "0px solid black";
+				}
+				else {
+					document.getElementById("hint").style.removeProperty("height");
+					document.getElementById("hint").style.removeProperty("border");
+				}
+			}
+			function contract_clients() {
+				if(!document.getElementById("clients_container").style.maxWidth.endsWith("em")) {
+					document.getElementById("clients_container").style.maxWidth  = "4em";
+					document.getElementById("clients_container").style.maxHeight = "4em";
+				}
+				else {
+					document.getElementById("clients_container").style.maxWidth  = "30vw";
+					document.getElementById("clients_container").style.maxHeight = "60vh";
+				}
+			}
+	/*}}}*/
+
+	/*{{{ input*/
+			let x = 7;
+			let mx = [0, 0];
+			let target_x = x;
+			let y = 6.15;
+			let my = [0, 0];
+			let target_y = y;
+			let zoom = 2;
+			let target_zoom = zoom;
+			let layer = 0;
+			let target_layer = layer;
+			let error_line_progress;
+			let guessed = false;
+			let guess_coords = null;
+			let showing_guess = false;
+
+			function guess() {
+				if(!guessed) {
+					let ratio = window.innerHeight/window.innerWidth;
+					guess_coords = [x, -y];
+					let sol_coords = room_coords(solution.room).slice();
+					sol_coords[0] += solution.room.o_x/35;
+					sol_coords[1] += solution.room.o_y/35;
+					sol_coords[0] += solution.hint_x/step/35;
+					sol_coords[1] += solution.hint_y/step/35;
+					let dx = sol_coords[0]-guess_coords[0];
+					let dy = sol_coords[1]-guess_coords[1];
+					if(lobby !== null) ws.send("g|" + Math.hypot(dx, dy) + "\n");
+					target_x =  (guess_coords[0]+sol_coords[0])/2;
+					target_y = -(guess_coords[1]+sol_coords[1])/2;
+					target_zoom = Math.max(zoom, 2/3*Math.max(Math.abs(guess_coords[0]-sol_coords[0]), Math.abs(guess_coords[1]-sol_coords[1]))+5);
+					target_layer = solution.room.layer;
+					error_line_progress = 0;
+					guessed = true;
+					showing_guess = true;
+				}
+				else if(lobby === null) play();
+			}
+			document.onkeydown = function(e) {
+				if(loading || lobby_loading) return;
+				switch(e.keyCode) {
+					case 65: // a
+					case 37: // left arrow
+						mx[0] = 1;
+						break;
+					case 87: // w
+					case 38: // up arrow
+						my[0] = 1;
+						break;
+					case 68: // d
+					case 39: // right arrow
+						mx[1] = 1;
+						break;
+					case 83: // s
+					case 40: // down arrow
+						my[1] = 1;
+						break;
+				}
+			}
+			document.onkeyup = function(e) {
+				switch(e.keyCode) {
+					case 32: // space
+						if(loading || lobby_loading) break;
+						if(showing_guess) break;
+						target_layer = (target_layer+1)%3;
+						if(test_hint_selection) {
+							image.image = new Image();
+							image.image.onload = load_round.bind(image.image);
+							image.image.src = "./Merged Screenshots/" + rooms[round].region + "/" + rooms[round].name + ".png";
+						}
+						break;
+					case 82: // r
+						if(loading || lobby_loading) break;
+						if(showing_guess) {
+							target_x = x;
+							target_y = y;
+							target_zoom = zoom;
+							showing_guess = false;
+						}
+						guess();
+						break;
+					case 65: // a
+					case 37: // left arrow
+						mx[0] = 0;
+						break;
+					case 87: // w
+					case 38: // up arrow
+						my[0] = 0;
+						break;
+					case 68: // d
+					case 39: // right arrow
+						mx[1] = 0;
+						break;
+					case 83: // s
+					case 40: // down arrow
+						my[1] = 0;
+						break;
+				}
+			}
+			document.onwheel = function(e) {
+				if(loading || lobby_loading) return;
+				if(!showing_guess) {
+					// should keep point under cursor at same place on screen but doesn't work
+					// feels decent so not bothering at the moment
+					let new_zoom = Math.min(300, Math.max(2, zoom*(1+(e.deltaY/60)/5)));
+					if(settings["zoom_move"] && zoom !== 2) {
+						let ratio = window.innerHeight/window.innerWidth;
+						let target_x = 2*(e.x-window.innerWidth /2)/window.innerWidth;
+						x += (zoom-new_zoom)*target_x/(1+(1-Math.cos(Math.min(3.14/2.0, Math.abs(  Math.min(1, ratio)*target_x)/1.75))))/   Math.min(1, ratio);
+						let target_y = 2*(e.y-window.innerHeight/2)/window.innerHeight;
+						y += (zoom-new_zoom)*target_y/(1+(1-Math.cos(Math.min(3.14/2.0, Math.abs(1/Math.max(1, ratio)*target_y)/1.75))))/(1/Math.max(1, ratio));
+					}
+					zoom = new_zoom;
+				}
+			};
+			let tap_start;
+			let drag_start;
+			let drag;
+			let pinch_ozoom;
+			let pinch_odist = 0;
+			document.addEventListener("DOMContentLoaded", function() {
+				document.getElementById("canvas").addEventListener("touchstart", function(e) {
+					e.preventDefault();
+				}, { passive: false });
+				document.getElementById("canvas").ontouchstart = function(e) {
+					if(e.targetTouches.length === 1) {
+						pinch_odist = 0;
+						tap_start = e.timeStamp;
+						drag_start = [e.targetTouches[0].pageX, e.targetTouches[0].pageY];
+						drag = false;
+					}
+					else {
+						tap_start = 0;
+						drag_start = [NaN, NaN];
+					}
+				};
+				document.getElementById("canvas").ontouchmove = function(e) {
+					if(e.targetTouches.length === 1) {
+						pinch_odist = 0;
+						if((drag && !isNaN(drag_start[0])) || Math.hypot(e.changedTouches[0].pageX-drag_start[0], e.changedTouches[0].pageY-drag_start[1]) > 0.25*72*window.devicePixelRatio) {
+							drag = true;
+							let ratio = window.innerHeight/window.innerWidth;
+							x -= 1.5*((e.changedTouches[0].pageX-drag_start[0])/Math.min(window.innerWidth, window.innerHeight))*zoom;
+							y -= 1.5*((e.changedTouches[0].pageY-drag_start[1])/Math.min(window.innerWidth, window.innerHeight))*zoom;
+							drag_start[0] = e.changedTouches[0].pageX;
+							drag_start[1] = e.changedTouches[0].pageY;
+						}
+					}
+					if(e.targetTouches.length === 2) {
+						if(pinch_odist === 0) {
+							pinch_ozoom = zoom;
+							pinch_odist = Math.hypot(e.targetTouches[1].pageX-e.targetTouches[0].pageX, e.targetTouches[1].pageY-e.targetTouches[0].pageY);
+						}
+						else {
+							let new_zoom = pinch_ozoom*(pinch_odist/Math.hypot(e.targetTouches[1].pageX-e.targetTouches[0].pageX, e.targetTouches[1].pageY-e.targetTouches[0].pageY));
+							// TODO: move zoom moving into a function and do here? (and fix it)
+							zoom = Math.min(300, Math.max(2, new_zoom));
+						}
+					}
+				};
+				document.getElementById("canvas").ontouchend = function(e) {
+					if(tap_start != 0 && !drag) {
+						if(e.timeStamp-tap_start < 150)
+							target_layer = (target_layer+1)%3;
+						else if(e.timeStamp-tap_start > 300)
+							guess();
+					}
+				}
+			});
+	/*}}}*/
+
+	/*{{{ region "fact" functions*/
+		/*{{{ region_map/dev_coords(region)*/
+			region_map_coords = {
+				"CC": [ 1575,    1345],
+				"DS": [  550,    -450], // mildly arbitrary after GW finalized
+				"HI": [  880,     347],
+				"GW": [ 2787, 221-475], // preferred 2787, 221 to align with HI
+				"SI": [-1093,    1744], // preferred -1093, 1690 to align with LF and -522, 1744 to align with CC
+				"SU": [    0,       0],
+				"SH": [ 3950, -90+475], // preferred 3950, -90 to align with HI
+				"SL": [ 5400,    -550], // gave up on this having a decent location, so did Andrew and kip so it's fine
+				"LF": [-2148,     422],
+				"UW": [ 4310,    2050], // arbitrary after CC and SH finalized
+				"SB": [ -785,   -1230], // arbitrary after DS finalized
+				"SS": [5486,     3300]  // mildly arbitrary after UW finalized
+			}
+			region_dev_coords = { // these are a mess, I did my best
+				"CC": [ 2844-400-300, 2025+1700-800],
+				"DS": [          373,          -960],
+				"HI": [ 1885-400-300,  463+1700-800],
+				"GW": [         3240,          -300],
+				"SI": [        -1600,          2523],
+				"SU": [            0,             0],
+				"SH": [     5257-400,     -151+1700],
+				"SL": [         7145,          -228],
+				"LF": [        -2765,           657],
+				"UW": [         5300,          3640], // there are excellent reasons beyond your comprehension for this placement
+				"SB": [        -1370,         -2250],
+				"SS": [         6473,          5598]
+			}
+			function room_coords(room) {
+				return (settings["dev"])
+					? [room.dev_coords[0]+room.w/35, room.dev_coords[1]+room.h/35]
+					: room.map_coords
+				;
+			}
+		/*}}}*/
+
+		/*{{{ region_color(region)*/
+			function region_color(region) {
+				switch(region) {
+					case "CC": return [1.00, 0.50, 0.00];
+					case "DS": return [0.80, 0.25, 0.85];
+					case "HI": return [0.45, 0.80, 0.85];
+					case "GW": return [0.55, 0.75, 0.25];
+					case "SI": return [1.00, 0.80, 0.65];
+					case "SU": return [0.20, 0.80, 0.60];
+					case "SH": return [0.30, 0.30, 0.30];
+					case "SL": return [0.95, 0.90, 0.80];
+					case "LF": return [0.40, 0.55, 0.60];
+					case "UW": return [0.70, 0.40, 0.25];
+					case "SB": return [0.80, 0.70, 0.20];
+					case "SS": return [0.75, 0.75, 0.75];
+				}
+			}
+		/*}}}*/
+
+		/*{{{ region_water_color(region)*/
+			function region_water_color(region) {
+				switch(region) {
+					case "GW": return [0.75, 0.45, 0.25, 1.00];
+					case "SL": return [0.30, 0.40, 0.20, 1.00];
+					default:   return [0.05, 0.10, 0.90, 0.75];
+				}
+			}
+		/*}}}*/
+	/*}}}*/
+
+	/*{{{ load_round(room)*/
+			let round = 0;
+			let solution = null;
+
+			function load_round() {
+				let room = rooms[round%rooms.length];
+				if(lobby === null) {
+					round++;
+					if(round === rooms.length) {
+						round = 0;
+						for(let i = 0; i < rooms.length; i++) {
+							let j = Math.floor(random_perc()*(rooms.length-1));
+							let temp = rooms[j];
+							rooms[j] = rooms[i];
+							rooms[i] = temp;
+						}
+					}
+				}
+				if(test_hint_selection && document.lastElementChild.tagName.toLowerCase === "img")
+					document.removeChild(document.lastElementChild);
+
+		/*{{{ get and flatten image data*/
+				let canvas = document.createElement("canvas");
+				canvas.width  = this.width;
+				canvas.height = this.height;
+				let ctx = canvas.getContext("2d");
+				ctx.drawImage(this, 0, 0);
+				let image_data = ctx.getImageData(0, 0, this.width, this.height);
+				image_data.original_data = image_data.data.slice();
+
+				let round_to = 4;
+				let min_color = 256/8;
+				round_to = 256/round_to;
+				for(let i = 0; i < this.width; i++) {
+					for(let j = 0; j < this.height; j++) {
+						let pixel = image_data.data.slice((j*(image_data.width)+i)*4, (j*(image_data.width)+i)*4+4);
+						image_data.data[(j*(image_data.width)+i)*4+0] = Math.max(min_color, Math.round(pixel[0]/round_to)*round_to);
+						image_data.data[(j*(image_data.width)+i)*4+1] = Math.max(min_color, Math.round(pixel[1]/round_to)*round_to);
+						image_data.data[(j*(image_data.width)+i)*4+2] = Math.max(min_color, Math.round(pixel[2]/round_to)*round_to);
+					}
+				}
+		/*}}}*/
+
+		/*{{{ get hint options for room*/
+				let options = [];
+				// see RWBG's gen_map.py to try to understand arbitrary adding and stuff
+				// seems to be off for some rooms, though - maybe the fault of manual camera offsets?
+				for(let x = (-17+step)%step; x+settings["difficulty"]*step-1 < this.width; x += settings["difficulty"]*step) {
+					for(let y = 18%step; y+settings["difficulty"]*step-1 < this.height; y += settings["difficulty"]*step) {
+						let unique = {};
+						for(let i = x; i < x+settings["difficulty"]*step; i++) {
+							for(let j = y; j < Math.min(this.height, y+settings["difficulty"]*step); j++) {
+								let pixel = image_data.data.slice((j*(image_data.width)+i)*4, (j*(image_data.width)+i)*4+4);
+								if(unique[pixel[0]+pixel[1]+pixel[2]] === undefined)
+									unique[pixel[0]+pixel[1]+pixel[2]] = 1;
+								else
+									unique[pixel[0]+pixel[1]+pixel[2]]++;
+							}
+						}
+						let count = 0;
+						for(let key in unique) {
+							if(unique[key] < 0.1*Math.pow(step, 2)) continue;
+							if(unique[key] < 0.2*Math.pow(step, 2)) {
+								count += 0.5;
+								continue;
+							}
+							if(unique[key] > 0.5*Math.pow(step, 2)) {
+								count += 0.5;
+								continue;
+							}
+							if(unique[key] > 0.6*Math.pow(step, 2)) continue;
+							count++;
+						}
+						if(count < 3) {
+							if(test_hint_selection) {
+								for(let i = x; i < x+settings["difficulty"]*step; i++) {
+									for(let j = y; j < y+settings["difficulty"]*step; j++) {
+										image_data.original_data[(j*(image_data.width)+i)*4+0] = 255;
+										image_data.original_data[(j*(image_data.width)+i)*4+1] = image_data.data[(j*(image_data.width)+i)*4+1];
+										image_data.original_data[(j*(image_data.width)+i)*4+2] = image_data.data[(j*(image_data.width)+i)*4+2];
+									}
+								}
+							}
+						}
+						else {
+							options.push([x, y]);
+						}
+					}
+				}
+		/*}}}*/
+
+				if(test_hint_selection) {
+					for(let i = 0; i < image_data.data.length; i++) { image_data.data[i] = image_data.original_data[i]; }
+					ctx.putImageData(image_data, 0, 0);
+					this.onload = null;
+					this.src = canvas.toDataURL();
+					document.body.appendChild(this);
+					document.body.lastElementChild.style = "position: absolute; left: 0; top: 0; width: 100vw; height: 100vh; z-index: 1;";
+					loading = false;
+					document.getElementById("loading_hint").style.removeProperty("opacity");
+					document.getElementById("loading_hint").style.removeProperty("pointer-events");
+				}
+				else if(options.length > 0) {
+
+		/*{{{ create texture and hint image*/
+					gl.useProgram(programs["solution"]["program"]);
+					if(image.texture !== undefined)
+						gl.deleteTexture(image.texture);
+					image.texture = gl.createTexture();
+					gl.bindTexture(gl.TEXTURE_2D, image.texture);
+					gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, image_data.width, image_data.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(image_data.original_data));
+					gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+					gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+					gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+					gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+					solution = new gl_solution(room, image_data, programs["solution"]);
+
+					let index = Math.floor(random_perc()*(options.length-1));
+					let hint_image_data = new ImageData(settings["difficulty"]*step, Math.min(this.height, options[index][1]+settings["difficulty"]*step)-options[index][1]);
+					solution.hint_x = options[index][0]+hint_image_data.width /2;
+					solution.hint_y = options[index][1]+hint_image_data.height/2;
+					for(let i = 0; i < hint_image_data.width; i++) {
+						for(let j = 0; j < hint_image_data.height; j++) {
+							hint_image_data.data[(j*(hint_image_data.width)+i)*4+0] = image_data.original_data[((j+options[index][1])*(image_data.width)+(i+options[index][0]))*4+0];
+							hint_image_data.data[(j*(hint_image_data.width)+i)*4+1] = image_data.original_data[((j+options[index][1])*(image_data.width)+(i+options[index][0]))*4+1];
+							hint_image_data.data[(j*(hint_image_data.width)+i)*4+2] = image_data.original_data[((j+options[index][1])*(image_data.width)+(i+options[index][0]))*4+2];
+							hint_image_data.data[(j*(hint_image_data.width)+i)*4+3] = 255;
+						}
+					}
+					canvas.width  = hint_image_data.width;
+					canvas.height = hint_image_data.height;
+					ctx.putImageData(hint_image_data, 0, 0);
+					document.getElementById("hint").src = canvas.toDataURL();
+		/*}}}*/
+
+					loading = false;
+					if(lobby === null) {
+						document.getElementById("loading_hint").style.removeProperty("opacity");
+						document.getElementById("loading_hint").style.removeProperty("pointer-events");
+					}
+					else ws.send("l|\n");
+				}
+				else {
+					// retry if no hints for this room
+					// modulus here and nowhere else is because this may loop without shuffling rooms and resetting round to 0
+					if(lobby !== null) {
+						round++;
+						ws.send("s|\n");
+					}
+					image.image = new Image();
+					image.image.onload = load_round.bind(image.image);
+					image.image.src = "./Merged Screenshots/" + rooms[round%rooms.length].region + "/" + rooms[round%rooms.length].name + ".png";
+				}
+			};
+	/*}}}*/
+
+	/*{{{ init*/
+			let gl;
+			let programs = {};
+			let rooms = [];
+			let rooms_by_name = {};
+			let connections = [];
+		/*{{{ load_progress*/
+			let load_progress = {
+				loading: 1,
+				loaded: function() {
+					this.loading--;
+					if(this.loading === 0) {
+						for(let i = 0; i < this.callbacks.length; i++) {
+							this.callbacks[i]();
+						}
+						this.callbacks = [];
+					}
+				},
+				callback: function(callback) {
+					if(this.loading === 0) callback();
+					else this.callbacks.push(callback);
+				},
+				callbacks: []
+			};
+		/*}}}*/
+
+		/*{{{ on load callback*/
+			load_progress.callback(function() {
+				rooms.sort(function(a, b) { return a.name.localeCompare(b.name); });
+				if(lobby === null) {
+					for(let i = 0; i < rooms.length; i++) {
+						let j = Math.floor(random_perc()*(rooms.length-1));
+						let temp = rooms[j];
+						rooms[j] = rooms[i];
+						rooms[i] = temp;
+					}
+					if(test_hint_selection) {
+						image.image = new Image();
+						image.image.onload = load_round;
+						image.image.src = "./Merged Screenshots/" + rooms[0].region + "/" + rooms[0].name + ".png";
+					}
+				}
+			});
+		/*}}}*/
+
+			function main() {
+				gl = document.querySelector("#canvas").getContext("webgl");
+				if(gl === null) return;
+				gl.enable(gl.BLEND);
+				gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.SRC_ALPHA, gl.ONE);
+				programs["room"] = room_program();
+				if(programs["room"] === null) return;
+				programs["connection"] = connection_program();
+				if(programs["connection"] === null) return;
+				programs["solution"] = solution_program();
+				if(programs["solution"] === null) return;
+				programs["error_line"] = error_line_program();
+				if(programs["error_line"] === null) return;
+				error_line = new gl_error_line(programs["error_line"]);
+
+		/*{{{ load rooms*/
+				fetch("./regions").then(function(response) { return response.text(); }).then(async function(data) {
+					let region_abbrs = data.replaceAll("\r", "").split("\n");
+					for(let i = 0; i < region_abbrs.length; i++) {
+						(function(region) {
+						load_progress.loading++;
+						fetch("./map_" + region).then(function(response) { return response.text(); }).then(async function(data) {
+							data = data.replaceAll("\r", "");
+							let i = 0;
+							while(true) {
+								let j = data.indexOf("\n", i);
+								if(j === -1) break;
+								let line = data.substring(i, j);
+								if(line.substring(0, 10) === "Connection")
+									connections.push(new connection(line.replace(/^.*?:\s*/, "").split(","), programs["connection"]));
+								if(line.substring(0, 3) !== region + "_" && line.substring(0, 8) !== "GATE_" + region + "_") { i = j+1; continue; }
+								(function(name) {
+								load_progress.loading++;
+								fetch("./" + region + "/" + name).then(function(response) { return response.text(); }).then(async function(data) {
+									let new_room = new room(name, data.replaceAll("\r", ""), programs["room"]);
+									rooms.push(new_room);
+									rooms_by_name[name] = new_room;
+									load_progress.loaded();
+								});
+								})(line.replace(/:.*$/, ""));
+								line = line.replace(/^.*:\s*/, "").split(",");
+								i = j+1;
+							}
+							load_progress.loaded();
+						});
+						})(region_abbrs[i]);
+					}
+					load_progress.loaded();
+				});
+		/*}}}*/
+
+		/*{{{ connection_texture*/
+				connection_texture = gl.createTexture();
+				gl.bindTexture(gl.TEXTURE_2D, connection_texture);
+				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 8, 2, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([
+					255, 255, 255, 0,
+					255, 255, 255, 0,
+					255, 255, 255, 191,
+					255, 255, 255, 255,
+					255, 255, 255, 255,
+					255, 255, 255, 255,
+					255, 255, 255, 255,
+					255, 255, 255, 255,
+					255, 255, 255, 0,
+					255, 255, 255, 0,
+					255, 255, 255, 191,
+					255, 255, 255, 255,
+					255, 255, 255, 255,
+					255, 255, 255, 255,
+					255, 255, 255, 255,
+					255, 255, 255, 255
+				]));
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+		/*}}}*/
+
+				display(0);
+			}
+			document.addEventListener("DOMContentLoaded", function(e) {
+				document.getElementById("js_splash").remove();
+				main();
+				if(lobby === null) {
+					document.getElementById("loading").style.removeProperty("opacity");
+					document.getElementById("loading").style.removeProperty("pointer-events");
+				}
+				else {
+					switch_modes(false);
+					document.getElementById("lobby").innerText = lobby;
+					lobby = null;
+					play();
+				}
+			});
+	/*}}}*/
+/*}}}*/
+
+/*{{{ GL*/
+		//<!--script-->
+	/*{{{ create_program(vertex_program, fragment_program)*/
+			function create_program(gl, vertex_program, fragment_program) {
+				let program = gl.createProgram();
+				let shaders = [gl.createShader(gl.VERTEX_SHADER), gl.createShader(gl.FRAGMENT_SHADER)];
+				gl.shaderSource(shaders[0], document.getElementById(vertex_program).textContent);
+				gl.compileShader(shaders[0]);
+				gl.attachShader(program, shaders[0]);
+				gl.shaderSource(shaders[1], document.getElementById(fragment_program).textContent);
+				gl.compileShader(shaders[1]);
+				gl.attachShader(program, shaders[1]);
+				gl.linkProgram(program);
+				if(!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+					gl.deleteProgram(program);
+					return null;
+				}
+				return program;
+			}
+	/*}}}*/
+
+	/*{{{ display(timestamp)*/
+			let last = 0;
+
+			function display(timestamp) {
+				delta_time = timestamp-last;
+				last = timestamp;
+
+		/*{{{ transitions/movement*/
+				if(layer !== target_layer) {
+					// go fastest direction to focus target layer
+					let new_layer = layer+(((target_layer-layer+3)%3 < 3/2) ? 1 : -1)*(delta_time/1000)/0.25;
+					if(((new_layer-target_layer)%3 > 0) !== ((layer-target_layer)%3 > 0))
+						new_layer = target_layer;
+					layer = (new_layer+3)%3;
+				}
+				if(!showing_guess) {
+					error_line_progress = 1;
+					x += 1.5*(delta_time/1000)*(mx[1]-mx[0])*zoom;
+					y += 1.5*(delta_time/1000)*(my[1]-my[0])*zoom;
+				}
+				else {
+					error_line_progress = Math.min(1, error_line_progress+(delta_time/1000)/1.5);
+					if(x !== target_x) {
+						let new_x = x+((target_x-x > 0) ? 1 : -1)*(Math.abs(target_x-x)+1)*(delta_time/1000)/1;
+						if((target_x-new_x > 0) !== (target_x-x > 0))
+							new_x = target_x;
+						x = new_x;
+					}
+					if(y !== target_y) {
+						let new_y = y+((target_y-y > 0) ? 1 : -1)*(Math.abs(target_y-y)+1)*(delta_time/1000)/1;
+						if((target_y-new_y > 0) !== (target_y-y > 0))
+							new_y = target_y;
+						y = new_y;
+					}
+					if(zoom !== target_zoom) {
+						let new_zoom = zoom+((target_zoom-zoom > 0) ? 1 : -1)*(Math.abs(target_zoom-zoom)+1)*(delta_time/1000)/0.5;
+						if((target_zoom-new_zoom > 0) !== (target_zoom-zoom > 0))
+							new_zoom = target_zoom;
+						zoom = new_zoom;
+					}
+					if(x === target_x && y === target_y && zoom === target_zoom) showing_guess = false;
+				}
+		/*}}}*/
+
+				gl.canvas.width  = window.outerWidth;
+				gl.canvas.height = window.outerHeight;
+				gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+				gl.clearColor(0, 0, 0, 1);
+				gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+				let ratio = gl.canvas.height/gl.canvas.width;
+				let projection = new Float32Array([
+					Math.min(1, ratio)/Math.tan(Math.PI/4), 0,                                        0,                    0,
+					0,                                      Math.min(1, 1/ratio)/Math.tan(Math.PI/4), 0,                    0,
+					0,                                      0,                                        -(1+0.5)/(1-0.5),     -zoom,
+					0,                                      0,                                        -(2*(1*0.5))/(1-0.5), 0
+				]);
+				for(let key in programs) {
+					gl.useProgram(programs[key]["program"]);
+					gl.uniform1f(programs[key]["uniforms"]["ratio"], ratio);
+					gl.uniformMatrix4fv(programs[key]["uniforms"]["projection"], false, projection);
+					gl.uniform1i(programs[key]["uniforms"]["stretch"], settings["stretch"]);
+				}
+				gl.useProgram(programs["room"]["program"]);
+				for(let i = 2; i >= 0; i--) {
+					if(guessed && solution !== null && solution.room.layer === i) {
+						gl.useProgram(programs["solution"]["program"]);
+						gl.uniformMatrix4fv(programs["solution"]["uniforms"]["model_view"], false, new Float32Array([
+							solution.room.w/35,              0,                               0, 0,
+							0,                               solution.room.h/35,              0, 0,
+							0,                               0,                               1, 0,
+							room_coords(solution.room)[0]-x, room_coords(solution.room)[1]+y, 0, 1
+						]));
+						solution.draw();
+						gl.useProgram(programs["room"]["program"]);
+					}
+					for(let j = 0; j < rooms.length; j++) {
+						if(rooms[j].layer === i) {
+							// a standard room is 35 units tall -> 1 unit
+							gl.uniformMatrix4fv(programs["room"]["uniforms"]["model_view"], false, new Float32Array([
+								rooms[j].w/35,              0,                          0, 0,
+								0,                          rooms[j].h/35,              0, 0,
+								0,                          0,                          1, 0,
+								room_coords(rooms[j])[0]-x, room_coords(rooms[j])[1]+y, 0, 1
+							]));
+							rooms[j].draw();
+						}
+					}
+					gl.useProgram(programs["connection"]["program"]);
+					gl.uniform1f(programs["connection"]["uniforms"]["time"], timestamp/1000);
+					for(let j = 0; j < connections.length; j++) {
+						if(connections[j].initialized && Math.min(connections[j].layer_start, connections[j].layer_end) === i) {
+							gl.uniform1f(programs["connection"]["uniforms"]["length"], connections[j].length);
+							gl.uniformMatrix4fv(programs["connection"]["uniforms"]["model_view"], false, new Float32Array([
+								1,                         0,                         0, 0,
+								0,                         1,                         0, 0,
+								0,                         0,                         1, 0,
+								connections[j].start[0]-x, connections[j].start[1]+y, 0, 1
+							]));
+							connections[j].draw();
+						}
+					}
+					gl.useProgram(programs["room"]["program"]);
+				}
+				if(guessed) {
+					gl.useProgram(programs["error_line"]["program"]);
+					// this is to match clip_space conversions in other vertex shaders, can't go between rooms with it active so not for this
+					let adjust_x = -solution.room.w/35+2*solution.room.o_x/35;
+					let adjust_y = -solution.room.h/35-2*solution.room.o_y/35;
+					// point to the center of the hint
+					adjust_x += 2*solution.hint_x/step/35;
+					adjust_y += 2*solution.hint_y/step/35;
+					gl.uniformMatrix4fv(programs["error_line"]["uniforms"]["model_view"], false, new Float32Array([
+						room_coords(solution.room)[0]+adjust_x-guess_coords[0], 0,                  0, 0,
+						0,                 -room_coords(solution.room)[1]+adjust_y+guess_coords[1], 0, 0,
+						0,                 0,                                                       1, 0,
+						guess_coords[0]-x, guess_coords[1]+y,                                       0, 1
+					]));
+					error_line.draw();
+				}
+				window.requestAnimationFrame(display);
+			}
+	/*}}}*/
+
+	/*{{{ room_program()*/
+			function room_program() {
+				let program = { "program": create_program(gl, "room_vertex_shader", "room_fragment_shader"), "uniforms": {}, "attributes": {} };
+				if(program["program"] === null) return null;
+				gl.useProgram(program["program"]);
+				program["attributes"]["position"] = gl.getAttribLocation(program["program"], "a_position");
+				program["uniforms"]["layer"] = gl.getUniformLocation(program["program"], "u_layer");
+				program["uniforms"]["stretch"] = gl.getUniformLocation(program["program"], "u_stretch");
+				program["uniforms"]["ratio"] = gl.getUniformLocation(program["program"], "u_ratio");
+				program["uniforms"]["projection"] = gl.getUniformLocation(program["program"], "u_projection");
+				program["uniforms"]["model_view"] = gl.getUniformLocation(program["program"], "u_model_view");
+				program["uniforms"]["color"] = gl.getUniformLocation(program["program"], "u_color");
+				return program;
+			}
+	/*}}}*/
+
+	/*{{{ connection_program()*/
+			function connection_program() {
+				let program = { "program": create_program(gl, "connection_vertex_shader", "connection_fragment_shader"), "uniforms": {}, "attributes": {} };
+				if(program["program"] === null) return null;
+				gl.useProgram(program["program"]);
+				program["attributes"]["position"] = gl.getAttribLocation(program["program"], "a_position");
+				program["attributes"]["t"] = gl.getAttribLocation(program["program"], "a_t");
+				program["uniforms"]["start_layer"] = gl.getUniformLocation(program["program"], "u_start_layer");
+				program["uniforms"]["end_layer"] = gl.getUniformLocation(program["program"], "u_end_layer");
+				program["uniforms"]["cur_layer"] = gl.getUniformLocation(program["program"], "u_cur_layer");
+				program["uniforms"]["stretch"] = gl.getUniformLocation(program["program"], "u_stretch");
+				program["uniforms"]["ratio"] = gl.getUniformLocation(program["program"], "u_ratio");
+				program["uniforms"]["projection"] = gl.getUniformLocation(program["program"], "u_projection");
+				program["uniforms"]["model_view"] = gl.getUniformLocation(program["program"], "u_model_view");
+				program["uniforms"]["sampler"] = gl.getUniformLocation(program["program"], "u_sampler");
+				program["uniforms"]["length"] = gl.getUniformLocation(program["program"], "u_length");
+				program["uniforms"]["time"] = gl.getUniformLocation(program["program"], "u_time");
+				return program;
+			}
+	/*}}}*/
+
+	/*{{{ solution_program()*/
+			function solution_program() {
+				let program = { "program": create_program(gl, "solution_vertex_shader", "solution_fragment_shader"), "uniforms": {}, "attributes": {} };
+				if(program["program"] === null) return null;
+				gl.useProgram(program["program"]);
+				program["attributes"]["position"] = gl.getAttribLocation(program["program"], "a_position");
+				program["attributes"]["texture_coords"] = gl.getAttribLocation(program["program"], "a_texture_coords");
+				program["uniforms"]["layer"] = gl.getUniformLocation(program["program"], "u_layer");
+				program["uniforms"]["stretch"] = gl.getUniformLocation(program["program"], "u_stretch");
+				program["uniforms"]["ratio"] = gl.getUniformLocation(program["program"], "u_ratio");
+				program["uniforms"]["projection"] = gl.getUniformLocation(program["program"], "u_projection");
+				program["uniforms"]["model_view"] = gl.getUniformLocation(program["program"], "u_model_view");
+				program["uniforms"]["sampler"] = gl.getUniformLocation(program["program"], "u_sampler");
+				return program;
+			}
+	/*}}}*/
+
+	/*{{{ error_line_program()*/
+			function error_line_program() {
+				let program = { "program": create_program(gl, "error_line_vertex_shader", "error_line_fragment_shader"), "uniforms": {}, "attributes": {} };
+				if(program["program"] === null) return null;
+				gl.useProgram(program["program"]);
+				program["attributes"]["position"] = gl.getAttribLocation(program["program"], "a_position");
+				program["uniforms"]["layer"] = gl.getUniformLocation(program["program"], "u_layer");
+				program["uniforms"]["stretch"] = gl.getUniformLocation(program["program"], "u_stretch");
+				program["uniforms"]["ratio"] = gl.getUniformLocation(program["program"], "u_ratio");
+				program["uniforms"]["projection"] = gl.getUniformLocation(program["program"], "u_projection");
+				program["uniforms"]["model_view"] = gl.getUniformLocation(program["program"], "u_model_view");
+				program["uniforms"]["color"] = gl.getUniformLocation(program["program"], "u_color");
+				program["uniforms"]["progress"] = gl.getUniformLocation(program["program"], "u_progress");
+				return program;
+			}
+	/*}}}*/
+
+	/*{{{ room(name, data, program)*/
+			function room(name, data, program) {
+
+		/*{{{ init*/
+				this.name = name;
+				this.region = name.replace(/^GATE_/, "").substring(0, 2);
+				gl.useProgram(program["program"]);
+				let air_data   = [];
+				let water_data = [];
+				let line_data  = [];
+
+			/*{{{ parse data*/
+				let i = 0;
+				let j = data.indexOf("\n");
+				let line = data.substr(i, j-i).split(",");
+				// convert to tile units, then to our units
+				let region_coords = region_map_coords[this.region];
+				this.map_coords = [(region_coords[0]+parseFloat(line[0])*2/3)/35, (region_coords[1]+parseFloat(line[1])*2/3)/35];
+				    region_coords = region_dev_coords[this.region];
+				this.dev_coords = [(region_coords[0]+parseFloat(line[2])    )/35, (region_coords[1]+parseFloat(line[3])    )/35];
+				this.layer = parseInt(line[4]);
+				i = j+1;
+				j = data.indexOf("\n", i);
+				line = data.substr(i, j-i).split("*");
+				this.w = parseInt(line[0]);
+				this.h = parseInt(line[1]);
+				i = j+1;
+				j = data.indexOf("\n", i);
+				line = data.substr(i, j-i).split(",");
+				this.o_x = parseInt(line[0])/20;
+				this.o_y = parseInt(line[1])/20;
+				i = j+1;
+				while(true) {
+					j = data.indexOf("\n", i);
+					if(j === -1) break;
+					line = data.substr(i, j-i);
+					let k = 1;
+					switch(line.charAt(0)) {
+						case " ":
+							while(true) {
+								let l = line.indexOf(" ", k);
+								if(l === -1) break;
+								let points = line.substr(k, l-k).split(",");
+								air_data.push(parseFloat(points[0]/this.w), parseFloat(points[1]/this.h));
+								air_data.push(parseFloat(points[2]/this.w), parseFloat(points[3]/this.h));
+								air_data.push(parseFloat(points[4]/this.w), parseFloat(points[5]/this.h));
+								k = l+1;
+							}
+							break;
+						case "W":
+							while(true) {
+								let l = line.indexOf("W", k);
+								if(l === -1) break;
+								let points = line.substr(k, l-k).split(",");
+								water_data.push(parseFloat(points[0]/this.w), parseFloat(points[1]/this.h));
+								water_data.push(parseFloat(points[2]/this.w), parseFloat(points[3]/this.h));
+								water_data.push(parseFloat(points[4]/this.w), parseFloat(points[5]/this.h));
+								k = l+1;
+							}
+							break;
+						case "|":
+							while(true) {
+								let l = line.indexOf("|", k);
+								if(l === -1) break;
+								let points = line.substr(k, l-k).split(",");
+								line_data.push(parseFloat(points[0]/this.w), parseFloat(points[1]/this.h));
+								line_data.push(parseFloat(points[2]/this.w), parseFloat(points[3]/this.h));
+								k = l+1;
+							}
+							break;
+					}
+					i = j+1;
+				}
+			/*}}}*/
+
+				this.air_vertex_positions = gl.createBuffer();
+				gl.bindBuffer(gl.ARRAY_BUFFER, this.air_vertex_positions);
+				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(air_data), gl.STATIC_DRAW);
+				this.num_air = air_data.length/2;
+				delete(air_data);
+				this.num_water = water_data.length/2;
+				if(this.num_water !== 0) {
+					this.water_vertex_positions = gl.createBuffer();
+					gl.bindBuffer(gl.ARRAY_BUFFER, this.water_vertex_positions);
+					gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(water_data), gl.STATIC_DRAW);
+					delete(water_data);
+				}
+				this.line_vertex_positions = gl.createBuffer();
+				gl.bindBuffer(gl.ARRAY_BUFFER, this.line_vertex_positions);
+				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(line_data), gl.STATIC_DRAW);
+				this.num_lines = line_data.length/2;
+				delete(line_data);
+		/*}}}*/
+
+		/*{{{ draw()*/
+				this.draw = function() {
+					gl.uniform1f(program["uniforms"]["layer"], (settings["dev"]) ? 0 : this.layer);
+
+					let size;
+					let stride;
+					let offset;
+					let layer_opacity = (settings["dev"]) ? 1 : Math.max(0, Math.abs(3/2-((layer-this.layer)+3)%3)-(3/2-1));
+					let color;
+					if(layer_opacity !== 0) {
+						if(!guessed || solution.room !== this) {
+							// Tell the attribute how to get data out of air_vertex_positions (ARRAY_BUFFER)
+							size = 2;          // 2 components per iteration
+							stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
+							offset = 0;        // start at the beginning of the buffer
+							gl.bindBuffer(gl.ARRAY_BUFFER, this.air_vertex_positions);
+							gl.vertexAttribPointer(program["attributes"]["position"], size, gl.FLOAT, false, stride, offset);
+							gl.enableVertexAttribArray(program["attributes"]["position"]);
+							if(settings["color"]) {
+								color = region_color(this.region);
+								gl.uniform4f(program["uniforms"]["color"], color[0], color[1], color[2], layer_opacity);
+							}
+							else
+								gl.uniform4f(program["uniforms"]["color"], 0.15, 0.15, 0.15, layer_opacity);
+							gl.drawArrays(gl.TRIANGLES, 0, this.num_air);
+						}
+
+						if(this.num_water !== 0) {
+							// Tell the attribute how to get data out of water_vertex_positions (ARRAY_BUFFER)
+							size = 2;          // 2 components per iteration
+							stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
+							offset = 0;        // start at the beginning of the buffer
+							gl.bindBuffer(gl.ARRAY_BUFFER, this.water_vertex_positions);
+							gl.vertexAttribPointer(program["attributes"]["position"], size, gl.FLOAT, false, stride, offset);
+							gl.enableVertexAttribArray(program["attributes"]["position"]);
+							color = region_water_color(this.region);
+							gl.uniform4f(program["uniforms"]["color"], color[0], color[1], color[2], layer_opacity*color[3]);
+							gl.drawArrays(gl.TRIANGLES, 0, this.num_water);
+						}
+					}
+
+					// Tell the attribute how to get data out of line_vertex_positions (ARRAY_BUFFER)
+					size = 2;          // 2 components per iteration
+					stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
+					offset = 0;        // start at the beginning of the buffer
+					gl.bindBuffer(gl.ARRAY_BUFFER, this.line_vertex_positions);
+					gl.vertexAttribPointer(program["attributes"]["position"], size, gl.FLOAT, false, stride, offset);
+					gl.enableVertexAttribArray(program["attributes"]["position"]);
+					if(settings["color"])
+						color = [0, 0, 0];
+					else
+						color = [1, 1, 1];
+					gl.uniform4f(program["uniforms"]["color"],
+						layer_opacity*color[0]+(1-layer_opacity)*0.35,
+						layer_opacity*color[1]+(1-layer_opacity)*0.35,
+						layer_opacity*color[2]+(1-layer_opacity)*0.35,
+					1);
+					gl.lineWidth(1/(0.075*(zoom+2.5)));
+					gl.drawArrays(gl.LINES, 0, this.num_lines);
+				}
+		/*}}}*/
+
+			}
+	/*}}}*/
+
+	/*{{{ connection(data, program)*/
+		/*{{{ connection path determination*/
+			function connection_integrate(d1, d2, angle, t, ratio) {
+				// 0 is right, 1 is up, 2 is left, 3 is down
+				let r1 =   d1      *(Math.PI/2);
+				let r2 = ((d2+2)%4)*(Math.PI/2);
+				let dr = r2-r1;
+				// take shortest path
+				if(Math.abs(dr) > Math.PI) dr = Math.sign(dr)*(Math.abs(dr)-2*Math.PI);
+				// ensure that 180s curve in the correct direction
+				if(Math.abs(Math.abs(dr)-Math.PI) <= 0.01) dr = Math.sign(d1%2*Math.cos(angle)-(d1+1)%2*Math.sin(angle))*Math.PI;
+				// TODO: weigh ((p2-p1) dot d1) versus ((p1-p2) dot d2) for angle transition speed
+				// TODO: in the middle be more like angle param, see big hoops in LF
+				// TODO: maybe transition to angle at t=weight value then back?
+				// TODO: could then split "halves" and put more middle to prevent wackyness with big connections
+				// account for coordinate flips when not going up-right
+				let down =  angle                        < Math.PI;
+				let left = (angle+Math.PI/2)%(2*Math.PI) > Math.PI;
+				return [
+					 Math.sign(Math.cos(r1+t*dr/2))*((left) ? -1 : 1)*Math.abs(Math.sin(r1+t*dr)-Math.sin(r1))/Math.max(1, 1/ratio),
+					-Math.sign(Math.sin(r1+t*dr/2))*((down) ? -1 : 1)*Math.abs(Math.cos(r1+t*dr)-Math.cos(r1))/Math.max(1,   ratio)
+				];
+			}
+			function connection_interpolate(d1, d2, angle, t, angle_movement, ratio) {
+				t = Math.min(1, Math.max(0, t));
+				let cur_angle_movement = connection_integrate(d1, d2, angle, t, ratio);
+				return [
+					t*(1-Math.min(1, angle_movement[0]))+cur_angle_movement[0]/Math.max(1, angle_movement[0]),
+					t*(1-Math.min(1, angle_movement[1]))+cur_angle_movement[1]/Math.max(1, angle_movement[1])
+					//(angle_movement[0] <= 0.01) ? t : cur_angle_movement[0]/angle_movement[0],
+					//(angle_movement[1] <= 0.01) ? t : cur_angle_movement[1]/angle_movement[1]
+				];
+			}
+		/*}}}*/
+
+			let connection_texture;
+
+			load_progress.callback(function() {
+				for(let i = 0; i < connections.length; i++) {
+					connections[i].init();
+				}
+			});
+
+			function connection(data, program) {
+
+		/*{{{ init*/
+				this.data = data;
+				this.program = program;
+				this.initialized = false;
+
+				this.init = function() {
+					let start_room = rooms_by_name[data[0]];
+					let end_room   = rooms_by_name[data[1]];
+					this.start = [
+						room_coords(start_room)[0]-start_room.w/35+2*parseInt(data[2])/35,
+						room_coords(start_room)[1]-start_room.h/35+2*parseInt(data[3])/35
+					];
+					this.end = [
+						room_coords(end_room)[0]-end_room.w/35+2*parseInt(data[4])/35,
+						room_coords(end_room)[1]-end_room.h/35+2*parseInt(data[5])/35
+					];
+					this.length = Math.hypot(this.end[0]-this.start[0], this.end[1]-this.start[1]);
+					this.layer_start = start_room.layer;
+					this.layer_end = end_room.layer;
+					data[6] = parseInt(data[6]);
+					data[7] = parseInt(data[7]);
+
+					gl.useProgram(program["program"]);
+					let connection_data = [];
+					let connection_t_data = [];
+					this.segments = 10+10*Math.floor(Math.max(1, length)-1);
+					let width = 1/35/2;
+					let angle = Math.atan2(this.end[1]-this.start[1], this.end[0]-this.start[0]);
+					angle = (angle+2*Math.PI)%(2*Math.PI);
+					let ratio = (this.end[1]-this.start[1])/(this.end[0]-this.start[0]);
+					let angle_movement = connection_integrate(data[6], data[7], angle, 1, ratio);
+					for(let i = 0; i <= this.segments; i++) {
+						let seg_start = connection_interpolate(data[6], data[7], angle,  i   /this.segments, angle_movement, ratio);
+						let seg_end   = connection_interpolate(data[6], data[7], angle, (i+1)/this.segments, angle_movement, ratio);
+						if(seg_end[0] === seg_start[0] && seg_end[1] === seg_start[1]) {
+							seg_end = connection_interpolate(data[6], data[7], angle, (i-1)/this.segments, angle_movement, ratio);
+							seg_end[0] -= 2*(seg_end[0]-seg_start[0]);
+							seg_end[1] -= 2*(seg_end[1]-seg_start[1]);
+						}
+						let tan = [
+							(seg_end[0]-seg_start[0])*(this.end[0]-this.start[0]),
+							(seg_end[1]-seg_start[1])*(this.end[1]-this.start[1])
+						];
+						let mag = Math.sqrt(Math.pow(tan[0], 2)+Math.pow(tan[1], 2));
+						tan[0] /= mag; tan[1] /= mag;
+						connection_data.push(
+							  1/35+seg_start[0]*(this.end[0]-this.start[0])-width/2*tan[1],
+							-(1/35+seg_start[1]*(this.end[1]-this.start[1])+width/2*tan[0])
+						);
+						connection_data.push(
+							  1/35+seg_start[0]*(this.end[0]-this.start[0])+width/2*tan[1],
+							-(1/35+seg_start[1]*(this.end[1]-this.start[1])-width/2*tan[0])
+						);
+						connection_t_data.push(i/this.segments);
+						connection_t_data.push(i/this.segments);
+					}
+
+					this.connection_vertex_positions = gl.createBuffer();
+					gl.bindBuffer(gl.ARRAY_BUFFER, this.connection_vertex_positions);
+					gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(connection_data), gl.STATIC_DRAW);
+					this.connection_t_values = gl.createBuffer();
+					gl.bindBuffer(gl.ARRAY_BUFFER, this.connection_t_values);
+					gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(connection_t_data), gl.STATIC_DRAW);
+					delete(connection_data);
+					delete(connection_t_data);
+					this.initialized = true;
+				}
+		/*}}}*/
+
+		/*{{{ draw()*/
+				this.draw = function() {
+					gl.uniform1f(program["uniforms"]["start_layer"], (settings["dev"]) ? 0 : this.layer_start);
+					gl.uniform1f(program["uniforms"]["end_layer"],   (settings["dev"]) ? 0 : this.layer_end);
+					gl.uniform1f(program["uniforms"]["cur_layer"], (settings["dev"]) ? 0 : layer);
+
+					// Tell the attribute how to get data out of connection_vertex_positions (ARRAY_BUFFER)
+					let size = 2;          // 2 components per iteration
+					let stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
+					let offset = 0;        // start at the beginning of the buffer
+					gl.bindBuffer(gl.ARRAY_BUFFER, this.connection_vertex_positions);
+					gl.vertexAttribPointer(program["attributes"]["position"], size, gl.FLOAT, false, stride, offset);
+					gl.enableVertexAttribArray(program["attributes"]["position"]);
+					gl.bindBuffer(gl.ARRAY_BUFFER, this.connection_t_values);
+					gl.vertexAttribPointer(program["attributes"]["t"], 1, gl.FLOAT, false, stride, offset);
+					gl.enableVertexAttribArray(program["attributes"]["t"]);
+					gl.activeTexture(gl.TEXTURE0);
+					gl.bindTexture(gl.TEXTURE_2D, connection_texture);
+					gl.uniform1i(program["uniforms"]["sampler"], 0);
+					gl.drawArrays(gl.TRIANGLE_STRIP, 0, 2*(this.segments+1));
+				}
+		/*}}}*/
+
+			}
+	/*}}}*/
+
+	/*{{{ gl_solution(room, image_data, program)*/
+			function gl_solution(room, image_data, program) {
+
+		/*{{{ init*/
+				this.room = room;
+				gl.useProgram(program["program"]);
+				let solution_data = [];
+				let solution_texture_data = [];
+
+				let w = Math.round(image_data.width/step);
+				let h = Math.round(image_data.height/step);
+				// using more steps because sphere-like stretching is done in vertex shader
+				for(let i = 0; i < this.room.w; i++) {
+					for(let j = 0; j < this.room.h; j++) {
+						solution_data.push((w/this.room.w)*((i  )/this.room.w)+this.room.o_x/this.room.w, (h/this.room.h)*((j  )/this.room.h)-this.room.o_y/this.room.h);
+						solution_data.push((w/this.room.w)*((i+1)/this.room.w)+this.room.o_x/this.room.w, (h/this.room.h)*((j  )/this.room.h)-this.room.o_y/this.room.h);
+						solution_data.push((w/this.room.w)*((i+1)/this.room.w)+this.room.o_x/this.room.w, (h/this.room.h)*((j+1)/this.room.h)-this.room.o_y/this.room.h);
+						solution_data.push((w/this.room.w)*((i  )/this.room.w)+this.room.o_x/this.room.w, (h/this.room.h)*((j  )/this.room.h)-this.room.o_y/this.room.h);
+						solution_data.push((w/this.room.w)*((i+1)/this.room.w)+this.room.o_x/this.room.w, (h/this.room.h)*((j+1)/this.room.h)-this.room.o_y/this.room.h);
+						solution_data.push((w/this.room.w)*((i  )/this.room.w)+this.room.o_x/this.room.w, (h/this.room.h)*((j+1)/this.room.h)-this.room.o_y/this.room.h);
+						solution_texture_data.push( i   /this.room.w,  j   /this.room.h);
+						solution_texture_data.push((i+1)/this.room.w,  j   /this.room.h);
+						solution_texture_data.push((i+1)/this.room.w, (j+1)/this.room.h);
+						solution_texture_data.push( i   /this.room.w,  j   /this.room.h);
+						solution_texture_data.push((i+1)/this.room.w, (j+1)/this.room.h);
+						solution_texture_data.push( i   /this.room.w, (j+1)/this.room.h);
+					}
+				}
+
+				this.solution_vertex_positions = gl.createBuffer();
+				gl.bindBuffer(gl.ARRAY_BUFFER, this.solution_vertex_positions);
+				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(solution_data), gl.STATIC_DRAW);
+				this.solution_texture_coords = gl.createBuffer();
+				gl.bindBuffer(gl.ARRAY_BUFFER, this.solution_texture_coords);
+				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(solution_texture_data), gl.STATIC_DRAW);
+				this.num_texture = solution_data.length/2;
+				delete(solution_data);
+				delete(solution_texture_data);
+		/*}}}*/
+
+		/*{{{ draw()*/
+				this.draw = function() {
+					gl.uniform1f(program["uniforms"]["layer"], (settings["dev"]) ? 0 : this.room.layer);
+
+					// Tell the attribute how to get data out of solution_vertex_positions (ARRAY_BUFFER)
+					let size = 2;          // 2 components per iteration
+					let stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
+					let offset = 0;        // start at the beginning of the buffer
+					gl.bindBuffer(gl.ARRAY_BUFFER, this.solution_vertex_positions);
+					gl.vertexAttribPointer(program["attributes"]["position"], size, gl.FLOAT, false, stride, offset);
+					gl.enableVertexAttribArray(program["attributes"]["position"]);
+					gl.bindBuffer(gl.ARRAY_BUFFER, this.solution_texture_coords);
+					gl.vertexAttribPointer(program["attributes"]["texture_coords"], size, gl.FLOAT, false, stride, offset);
+					gl.enableVertexAttribArray(program["attributes"]["texture_coords"]);
+					gl.activeTexture(gl.TEXTURE0);
+					gl.bindTexture(gl.TEXTURE_2D, image.texture);
+					gl.uniform1i(program["uniforms"]["sampler"], 0);
+					gl.drawArrays(gl.TRIANGLES, 0, this.num_texture);
+				}
+		/*}}}*/
+
+			}
+	/*}}}*/
+
+	/*{{{ gl_error_line(program)*/
+			let error_line = null;
+
+			function gl_error_line(program) {
+				gl.useProgram(program["program"]);
+
+				this.error_vertex_positions = gl.createBuffer();
+				gl.bindBuffer(gl.ARRAY_BUFFER, this.error_vertex_positions);
+				gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 1, 1]), gl.STATIC_DRAW);
+
+		/*{{{ draw()*/
+				this.draw = function() {
+					gl.uniform1f(program["uniforms"]["layer"], (settings["dev"]) ? 0 : solution.room.layer);
+					gl.uniform1f(program["uniforms"]["progress"], error_line_progress);
+
+					// Tell the attribute how to get data out of error_vertex_positions (ARRAY_BUFFER)
+					let size = 2;          // 2 components per iteration
+					let stride = 0;        // 0 = move forward size * sizeof(type) each iteration to get the next position
+					let offset = 0;        // start at the beginning of the buffer
+					gl.bindBuffer(gl.ARRAY_BUFFER, this.error_vertex_positions);
+					gl.vertexAttribPointer(program["attributes"]["position"], size, gl.FLOAT, false, stride, offset);
+					gl.enableVertexAttribArray(program["attributes"]["position"]);
+					gl.uniform4f(program["uniforms"]["color"], 255, 0, 0, 255);
+					gl.lineWidth(5/(0.075*(zoom+2.5)));
+					gl.drawArrays(gl.LINES, 0, 2);
+				}
+		/*}}}*/
+
+			}
+	/*}}}*/
+		</script>
+
+<!--{{{ room_vertex_shader-->
+		<script id="room_vertex_shader" type="x-shader/x-vertex">
+			attribute vec2 a_position;
+
+			uniform float u_layer;
+			uniform bool u_stretch;
+			uniform float u_ratio;
+			uniform mat4 u_projection;
+			uniform mat4 u_model_view;
+
+			void main() {
+				// 0..1 -> -1..1
+				vec2 clip_space = (a_position*2.0)-1.0;
+				vec4 screen_space = u_projection * u_model_view * vec4(clip_space*vec2(1, -1), -0.75-0.25*(u_layer/2.0), 1);
+
+				if(u_stretch) {
+					screen_space[0] *= 1.0+(1.0-cos(min(3.14/2.0, abs(1.0/max(1.0, u_ratio)*screen_space[0]/screen_space[3])/1.75)));
+					screen_space[1] *= 1.0+(1.0-cos(min(3.14/2.0, abs(    min(1.0, u_ratio)*screen_space[1]/screen_space[3])/1.75)));
+				}
+
+				gl_Position = screen_space;
+			}
+		</script>
+<!--}}}-->
+
+<!--{{{ room_fragment_shader-->
+		<script id="room_fragment_shader" type="x-shader/x-fragment">
+			precision mediump float;
+
+			uniform vec4 u_color;
+
+			void main() {
+				gl_FragColor = u_color;
+			}
+		</script>
+<!--}}}-->
+
+<!--{{{ connection_vertex_shader-->
+		<script id="connection_vertex_shader" type="x-shader/x-vertex">
+			attribute vec2 a_position;
+			attribute float a_t;
+
+			uniform float u_start_layer;
+			uniform float u_end_layer;
+			uniform bool u_stretch;
+			uniform float u_ratio;
+			uniform mat4 u_projection;
+			uniform mat4 u_model_view;
+
+			varying float v_t;
+			varying float v_start_layer;
+			varying float v_end_layer;
+
+			void main() {
+				v_t = a_t;
+				v_start_layer = u_start_layer;
+				v_end_layer = u_end_layer;
+
+				vec4 screen_space = u_projection * u_model_view * vec4(a_position*vec2(1, -1), -0.75-0.25*((u_start_layer+a_t*(u_end_layer-u_start_layer))/2.0), 1);
+
+				if(u_stretch) {
+					screen_space[0] *= 1.0+(1.0-cos(min(3.14/2.0, abs(1.0/max(1.0, u_ratio)*screen_space[0]/screen_space[3])/1.75)));
+					screen_space[1] *= 1.0+(1.0-cos(min(3.14/2.0, abs(    min(1.0, u_ratio)*screen_space[1]/screen_space[3])/1.75)));
+				}
+
+				gl_Position = screen_space;
+			}
+		</script>
+<!--}}}-->
+
+<!--{{{ connection_fragment_shader-->
+		<script id="connection_fragment_shader" type="x-shader/x-fragment">
+			precision mediump float;
+
+			uniform sampler2D u_sampler;
+			uniform float u_cur_layer;
+			uniform float u_length;
+			uniform float u_time;
+
+			varying float v_t;
+			varying float v_start_layer;
+			varying float v_end_layer;
+
+			float layer_opacity(float layer) {
+				float opacity = (u_cur_layer-layer)+3.0;
+				if(opacity > 3.0) opacity -= 3.0;
+				opacity = max(0.0, abs(3.0/2.0-opacity)-(3.0/2.0-1.0));
+				return opacity;
+			}
+
+			void main() {
+				gl_FragColor = texture2D(u_sampler, vec2(7.5*u_length*(v_t+u_time/u_length/7.5), 0.0));
+				float start_opacity = layer_opacity(v_start_layer);
+				float end_opacity = layer_opacity(v_end_layer);
+				float opacity = (v_start_layer == v_end_layer)
+					? start_opacity
+					: max(0.0, max((1.0-v_t)*start_opacity, v_t*end_opacity))
+				;
+				gl_FragColor[3] *= 0.35+0.65*opacity;
+			}
+		</script>
+<!--}}}-->
+
+<!--{{{ solution_vertex_shader-->
+		<script id="solution_vertex_shader" type="x-shader/x-vertex">
+			attribute vec2 a_position;
+			attribute vec2 a_texture_coords;
+
+			uniform float u_layer;
+			uniform bool u_stretch;
+			uniform float u_ratio;
+			uniform mat4 u_projection;
+			uniform mat4 u_model_view;
+
+			varying vec2 v_texture_coords;
+
+			void main() {
+				v_texture_coords = a_texture_coords;
+
+				// 0..1 -> -1..1
+				vec2 clip_space = (a_position*2.0)-1.0;
+				vec4 screen_space = u_projection * u_model_view * vec4(clip_space*vec2(1, -1), -0.75-0.25*(u_layer/2.0), 1);
+
+				if(u_stretch) {
+					screen_space[0] *= 1.0+(1.0-cos(min(3.14/2.0, abs(1.0/max(1.0, u_ratio)*screen_space[0]/screen_space[3])/1.75)));
+					screen_space[1] *= 1.0+(1.0-cos(min(3.14/2.0, abs(    min(1.0, u_ratio)*screen_space[1]/screen_space[3])/1.75)));
+				}
+
+				gl_Position = screen_space;
+			}
+		</script>
+<!--}}}-->
+
+<!--{{{ solution_fragment_shader-->
+		<script id="solution_fragment_shader" type="x-shader/x-fragment">
+			precision mediump float;
+
+			uniform sampler2D u_sampler;
+
+			varying vec2 v_texture_coords;
+
+			void main() {
+				gl_FragColor = texture2D(u_sampler, v_texture_coords);
+			}
+		</script>
+<!--}}}-->
+
+<!--{{{ error_line_vertex_shader-->
+		<script id="error_line_vertex_shader" type="x-shader/x-vertex">
+			attribute vec2 a_position;
+
+			uniform float u_layer;
+			uniform bool u_stretch;
+			uniform float u_ratio;
+			uniform mat4 u_projection;
+			uniform mat4 u_model_view;
+
+			varying vec2 v_position;
+
+			void main() {
+				v_position = a_position;
+
+				vec4 screen_space = u_projection * u_model_view * vec4(a_position*vec2(1, -1), -0.75-0.25*(u_layer/2.0), 1);
+
+				if(u_stretch) {
+					screen_space[0] *= 1.0+(1.0-cos(min(3.14/2.0, abs(1.0/max(1.0, u_ratio)*screen_space[0]/screen_space[3])/1.75)));
+					screen_space[1] *= 1.0+(1.0-cos(min(3.14/2.0, abs(    min(1.0, u_ratio)*screen_space[1]/screen_space[3])/1.75)));
+				}
+
+				gl_Position = screen_space;
+			}
+		</script>
+<!--}}}-->
+
+<!--{{{ error_line_fragment_shader-->
+		<script id="error_line_fragment_shader" type="x-shader/x-fragment">
+			precision mediump float;
+
+			uniform vec4 u_color;
+			uniform float u_progress;
+
+			varying vec2 v_position;
+
+			void main() {
+				if(v_position.x > 0.5-cos(3.1416*u_progress)/2.0) {
+					discard;
+					return;
+				}
+				gl_FragColor = u_color;
+			}
+		</script>
+<!--}}}-->
+<!--}}}-->
+
+	</head>
+	<body>
+		<span style="position:absolute; bottom:1em; right:1em;">
+			<a href="https://github.com/IsaacElenbaas/RWGG">Rain World GeoGuesser</a> by <a href="https://github.com/IsaacElenbaas">Isaac Elenbaas</a>
+		</span>
+		<span id="transition"   class="splash"></span>
+		<span id="loading_hint" class="splash" style="background-color:rgba(0, 0, 0, 0.75);"><h1></h1></span>
+		<span id="loading"   class="splash" style="opacity:1"><h1>Loading. . .</h1></span>
+		<span id="js_splash"    class="splash" style="opacity:1"><h1>Please enable JavaScript</h1></span>
+
+<!--{{{ settings-->
+		<span id="settings" style="z-index:-1; opacity:1; pointer-events:unset;">
+			<br />
+			<br />
+			<span id="arrows">
+				<h1 style="left:0;  z-index:1;" onclick="switch_modes(true)">&lt;</h1>
+				<h1 style="right:0; z-index:1;" onclick="switch_modes(true)">&gt;</h1>
+			</span>
+			<h1 id="header">SINGLEPLAYER</h1>
+			<form>
+
+	<!--{{{ left half-->
+				<span style="display:block; width:47.5%; float:left;">
+					<span id="hide_single" style="display:none">
+						<span class="text_input">
+							<span>Lobby name: </span><span id="lobby" onkeypress="return (event.keyCode === 8 || event.keyCode === 46 || String.fromCharCode(event.charCode).match(/[a-zA-Z0-9]/) !== null)" contenteditable>default</span>
+						</span>
+						<br />
+						<span class="text_input">
+							<span>Name (optional): </span><span id="name" onkeypress="return (event.keyCode === 8 || event.keyCode === 46 || String.fromCharCode(event.charCode).match(/[a-zA-Z0-9]/) !== null)" contenteditable></span>
+						</span>
+						<br />
+						<span class="text_input">
+							<span>Time to guess (vote, optional):</span>
+							<span id="time_vote_container" onclick="t=document.getElementById('time_vote'); t.focus(); s=window.getSelection(); s.collapse(s.focusNode, (event.offsetX < event.target.clientWidth/2) ? 0 : t.innerText.length);">
+								<span id="time_vote" style="display:inline-block" onkeypress="return (event.keyCode === 8 || event.keyCode === 46 || String.fromCharCode(event.charCode).match(/[0-9]/) !== null)" onclick="event.stopPropagation()" contenteditable></span>s
+							</span>
+						</span>
+						<br />
+						<span id="multi_error" style="color:red"></span>
+						<br />
+					</span>
+					<span>
+						WASD, arrow keys, optionally zoom (not mobile), and/or drag (mobile) to move<br />
+						Scroll or pinch (mobile) to zoom<br />
+						Space or tap (mobile) to change layers<br />
+						R or hold (mobile) to guess, repeat to start the next round<br />
+						Click hint to expand it<br />
+					</span>
+				</span>
+	<!--}}}-->
+
+	<!--{{{ right half-->
+				<span style="display:block; width:47.5%; float:left; margin-left:5%">
+					<span style="margin:0 auto">
+
+		<!--{{{ difficulties-->
+						<span style="display:inline-block">
+							Difficulty:<br />
+							<label class="choice" style="float:left; margin-right:1em;">
+								<input type="radio" id="monk" name="difficulty" value="monk">
+								<span><img src="./MultiplayerPortrait11.png" alt="Difficulty: Monk" draggable="false"></span>
+							</label>
+							<label class="choice" style="float:left; margin-right:1em;">
+								<input type="radio" id="survivor" name="difficulty" value="survivor" checked="checked">
+								<span><img src="./MultiplayerPortrait01.png" alt="Difficulty: Survivor" draggable="false"></span>
+							</label>
+							<label class="choice" style="float:left">
+								<input type="radio" id="hunter" name="difficulty" value="hunter">
+								<span><img src="./MultiplayerPortrait21.png" alt="Difficulty: Hunter" draggable="false"></span>
+							</label>
+						</span>
+		<!--}}}-->
+
+						<br /><br />
+
+		<!--{{{ checkboxes-->
+						<table style="display:inline-block">
+							<tr>
+								<td>
+									<span style="margin-right:0.5em">Color:</span>
+								</td>
+								<td>
+									<label class="check choice">
+										<input type="checkbox" id="color" name="color"><span></span><br>
+									</label>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<span style="margin-right:0.5em">Stretching:</span>
+								</td>
+								<td>
+									<label class="check choice">
+										<input type="checkbox" id="stretch" name="stretch" checked="checked"><span></span><br>
+									</label>
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<span style="margin-right:0.5em">Zooming moves:</span>
+								</td>
+								<td>
+									<label class="check choice">
+										<input type="checkbox" id="zoom_move" name="zoom_move"><span></span><br>
+									</label>
+								</td>
+							</tr>
+						</table>
+		<!--}}}-->
+
+						<br /><br />
+
+		<!--{{{ map type-->
+						<span style="display:inline-block">
+							<span style="display:table">
+								<span style="padding-right:0.5em; display:table-cell; white-space:nowrap;">Map type:</span>
+								<span style="display:table-cell; width:100%">
+									<label class="text choice">
+										<input type="radio" id="in_game" name="map" value="in_game" checked="checked">
+										<span><span>IN-GAME</span></span>
+									</label>
+									<label class="text choice">
+										<input type="radio" id="dev" name="map" value="dev">
+										<span><span>DEV</span></span>
+									</label>
+								</span>
+							</span>
+						</span><br />
+		<!--}}}-->
+
+						<br /><br />
+
+						<label class="text choice" id="play" onclick="play()">
+							<input type="radio" name="play" value="play" onclick="event.stopPropagation()">
+							<span><span>PLAY!</span></span>
+						</label>
+					</span>
+				</span>
+	<!--}}}-->
+
+			</form>
+		</span>
+<!--}}}-->
+
+		<img id="hint" onclick="expand_hint()" draggable="false" style="z-index:-2">
+		<h1 id="timer" style="z-index:-2"></h1>
+		<span style="position:absolute; z-index:-2;">
+			<span id="show_settings" style="display:inline-block" onclick="show_settings()">&#9881;</span><br />
+			<span id="clients_container" style="display:block; overflow:scroll;" onwheel="event.stopPropagation()" onclick="contract_clients()">
+				<table id="clients"></table>
+			</span>
+		</span>
+		<canvas id="canvas" style="z-index:-3"></canvas>
+	</body>
+</html>
