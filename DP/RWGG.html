@@ -258,7 +258,19 @@
 						reader.readAsDataURL(blob);
 					});
 				}).then(function(url) {
-					image.image.src = url;
+					if(url.slice(0, 15) == "data:text/plain") {
+						fetch("https://raw.githubusercontent.com/IsaacElenbaas/RWMS/master/" + room.name.replace(/-.*$/, "") + "/" + room.region + "/" + atob(url.slice(23))).then(function(response) { return response.blob(); }).then(function(blob) {
+							return new Promise(function(resolve, reject) {
+								let reader = new FileReader();
+								reader.onloadend = function() { resolve(reader.result); };
+								reader.onerror = reject;
+								reader.readAsDataURL(blob);
+							});
+						}).then(function(url) {
+							image.image.src = url;
+						});
+					}
+					else image.image.src = url;
 				});
 				//return "./RWMS/" + room.name.replace(/-.*$/, "") + "/" + room.region + "/" + room.name.replace(/^.*?-/, "") + ".png";
 			}
